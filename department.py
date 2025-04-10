@@ -26,10 +26,16 @@ def create_department(department: DepartmentCreate, db: Session = Depends(get_db
 def get_departments(db: Session = Depends(get_db)):
     return db.query(Department).all()
 
+@router.get("/department/{department_code}", response_model=DepartmentResponse)
+def get_departments(department_code: str,db: Session = Depends(get_db)):
+    return db.query(Department).filter(Department.department_code==department_code).first()
+
+
 
 @router.put("/departments/{department_code}", response_model=DepartmentResponse)
 def update_department(department_code: str, department_data: DepartmentCreate, db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)):
+    
     role =current_user["role"] 
     if role not in ["HR"]:
         raise HTTPException(status_code=401, detail="No access")  
