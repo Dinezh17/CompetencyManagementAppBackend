@@ -252,7 +252,7 @@ def get_all_employees(
     if role not in ["HOD", "HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     try:
-        if(current_user["role"]=="HR"):
+        if role in ["HR","ADMIN"]:
 
             employees = db.query(Employee).all()
             return employees
