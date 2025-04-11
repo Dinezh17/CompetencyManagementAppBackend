@@ -102,6 +102,7 @@ class EmployeeCreateRequest(BaseModel):
     reporting_employee_name: str
     role_code: str
     department_code: str
+
 class EmployeeResponse(BaseModel):
     employee_number: str
     employee_name: str
@@ -147,3 +148,12 @@ class TokenData(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+class ManagerResponse(BaseModel):
+    employee_number: str
+    employee_name: str
+    job_code: str
+    reporting_employee_name: str
+    role_code: str
+    department_code: str
+    

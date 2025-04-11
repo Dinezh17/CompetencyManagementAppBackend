@@ -1,6 +1,7 @@
 from datetime import date
+from operator import and_
 from fastapi import APIRouter, Depends, File, UploadFile
-from models import Competency, Department, Employee, EmployeeCompetency, Role, RoleCompetency
+from models import Competency, Department, Employee, EmployeeCompetency, ManagingEmployee, Role, RoleCompetency
 from fastapi.responses import JSONResponse
 import pandas as pd
 import re
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 from models import Employee, EmployeeCompetency, RoleCompetency
 from database import get_db
 from auth import get_current_user
-from schemas import BulkEvaluationStatusUpdate, EmployeeCreateRequest, EmployeeEvaluationStatusUpdate, EmployeeResponse
+from schemas import BulkEvaluationStatusUpdate, EmployeeCreateRequest, EmployeeEvaluationStatusUpdate, EmployeeResponse, ManagerResponse
 
 
 
@@ -202,6 +203,9 @@ def update_employee(
             detail=f"Error updating employee: {str(e)}"
         )
 
+
+
+
 @router.delete("/employees/{employee_number}")
 def delete_employee(
     employee_number: str,
@@ -258,9 +262,9 @@ def get_all_employees(
             return employees
         
         else:
-            employees = db.query(Employee).filter(
+            employees = db.query(Employee).filter(and_(
             Employee.department_code == current_user["department_code"]
-        ).all()
+        )).all()
             
             return employees
 
@@ -274,3 +278,10 @@ def get_all_employees(
 
 
 
+@router.get("/managing-employee/{empnumber}",response_model=ManagerResponse)
+def getManagingEmployee(empnumber:str,db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    res = db.query(ManagingEmployee).filter(ManagingEmployee.employee_number==empnumber).first()
+
+    return res

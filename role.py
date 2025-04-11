@@ -1,4 +1,5 @@
 
+from operator import and_
 from typing import List
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -33,7 +34,7 @@ def create_role(role_data: RoleCreate, db: Session = Depends(get_db), current_us
 
 @router.get("/roles", response_model=List[RoleResponse])
 def get_all_roles(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    roles = db.query(Role).all()
+    roles = db.query(Role).filter(and_(Role.role_code!="HR",Role.role_code!="HOD")).all()
     return roles
 
 

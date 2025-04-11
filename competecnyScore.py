@@ -7,7 +7,7 @@ from database import get_db
 from models import Competency, Department, Employee, EmployeeCompetency
 from schemas import CompetencyCreate, CompetencyResponse, EmployeeCompetencyResponse
 import schemas
-
+ 
 router = APIRouter()
 
 # @router.post("/evaluations")

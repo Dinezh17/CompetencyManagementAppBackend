@@ -61,6 +61,16 @@ class Employee(Base):
     last_evaluated_date = Column(Date, nullable=True)  # Explicitly nullable
 
 
+class ManagingEmployee(Base):
+    __tablename__ = "managing_employees"
+    employee_number = Column(String, primary_key=True, index=True)
+    employee_name = Column(String)
+    job_code = Column(String)
+    reporting_employee_name = Column(String)
+    role_code = Column(String, ForeignKey("roles.role_code"))
+    department_code = Column(String, ForeignKey("departments.department_code"))
+    
+
 
 class EmployeeCompetency(Base):
     __tablename__ = "employee_competencies"
