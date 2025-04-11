@@ -10,7 +10,7 @@ from jose import JWTError, jwt
 
 router = APIRouter()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/loginSwagger/")
 
 SECRET_KEY = "your_secret_key"
 ALGORITHM = "HS256"
@@ -73,6 +73,33 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     refresh_token = create_refresh_token(
         data={"sub": db_user.username}
     )
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user": db_user.username,
+        "role": db_user.role,
+        "department_code": db_user.department_code
+    }
+from fastapi import Form
+
+@router.post("/loginSwagger/")
+def loginSwaggerUI(
+    username: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    db_user = db.query(User).filter(User.email == username).first()
+    if not db_user or not verify_password(password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    access_token = create_access_token(
+        data={"sub": db_user.username, "role": db_user.role, "department_code": db_user.department_code},
+        expires_delta=timedelta(minutes=30)
+    )
+
+    refresh_token = create_refresh_token(data={"sub": db_user.username})
 
     return {
         "access_token": access_token,
