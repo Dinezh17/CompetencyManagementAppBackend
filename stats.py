@@ -48,6 +48,7 @@ def get_competency_gap_data(db: Session = Depends(get_db),
             "gap3": gap3,
             "totalGapEmployees": gap1 + gap2 + gap3
         })
+    result.sort(key=lambda x: x["totalGapEmployees"], reverse=True)
 
     return result
 
@@ -152,8 +153,13 @@ class CompetencyPerformance(BaseModel):
 @router.get("/stats/department-performance/{department_code}", response_model=Dict[str, Any])
 def get_competency_by_department_stats(
     department_code: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+
 ):
+    role =current_user["role"] 
+    if role not in ["HR","ADMIN"]:
+        raise HTTPException(status_code=401, detail="No access")  
     """
     Get department performance statistics showing all competencies
     for a specific department with rankings.
@@ -254,7 +260,12 @@ class OverallCompetencyPerformance(BaseModel):
 
 
 @router.get("/stats/overall-competency-performance", response_model=List[OverallCompetencyPerformance])
-def get_overall_competency_performance(db: Session = Depends(get_db)):
+def get_overall_competency_performance(db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)):
+    
+    role =current_user["role"] 
+    if role not in ["HR","ADMIN"]:
+        raise HTTPException(status_code=401, detail="No access")  
     """
     Get overall competency performance statistics ranked from best to worst performing
     across the entire organization.
@@ -279,11 +290,7 @@ def get_overall_competency_performance(db: Session = Depends(get_db)):
             EmployeeCompetency,
             EmployeeCompetency.competency_code == Competency.code
         )
-        .join(
-            Employee,
-            Employee.employee_number == EmployeeCompetency.employee_number
-        )
-        .group_by(Competency.code, Competency.name, Competency.description, Competency.required_score)
+        .group_by(Competency.code)
         .all()
     )
     

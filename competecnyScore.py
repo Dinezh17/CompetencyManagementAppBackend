@@ -60,13 +60,14 @@ def submit_evaluation(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+    role =current_user["role"] 
+    if role not in ["ADMIN","HOD"]:
+        raise HTTPException(status_code=401, detail="No access")   
     # Validate input
     if "scores" not in evaluation_data:
         raise HTTPException(status_code=400, detail="Invalid evaluation data format")
     
-    evaluator_id = current_user["username"]
-    if (current_user["role"]!="HOD"):
-        raise HTTPException(status_code=401, detail="only hod can update scores")
+   
     # Check if employee exists
     employee = db.query(Employee).filter(Employee.employee_number == employee_number).first()
     if not employee:
@@ -89,9 +90,11 @@ def submit_evaluation(
         if competency:
             # Update existing record
             competency.actual_score = score["actual_score"]
-        
+    evaluator_id=db.query(Employee).filter(Employee.employee_number==current_user["username"]).first()
+    if not evaluator_id:
+        raise HTTPException(status_code=404, detail="Evaluator not found")
     employee.evaluation_status = True
-    employee.evaluation_by = evaluator_id
+    employee.evaluation_by = evaluator_id.employee_name
     employee.last_evaluated_date = datetime.utcnow()
     
     db.commit()
@@ -114,8 +117,10 @@ def get_all_employee_competencies(
     current_user: dict = Depends(get_current_user)
 ):
     role =current_user["role"] 
-    if role not in ["HOD", "HR"]:
-        raise HTTPException(status_code=401, detail="No access")    
+    if role not in ["ADMIN", "HR","HOD"]:
+        raise HTTPException(status_code=401, detail="No access") 
+
+
     return db.query(EmployeeCompetency).all()
 
 
@@ -128,8 +133,11 @@ def get_all_employee_competencies(
 def get_employee_competencies(
     employee_number: str,
     db: Session = Depends(get_db),
-    current_user: dict =     Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):  
+    role =current_user["role"] 
+    if role not in ["HR","ADMIN","HOD","EMPLOYEE"]:
+        raise HTTPException(status_code=401, detail="No access")  
     
     if not db.query(Employee).filter(Employee.employee_number == employee_number).first():
         raise HTTPException(status_code=404, detail="Employee not found")

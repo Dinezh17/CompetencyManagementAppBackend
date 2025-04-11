@@ -27,7 +27,10 @@ def get_employee_details(
     employee_number: str,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
-):
+):      
+    role =current_user["role"] 
+    if role not in ["HR","ADMIN","EMPLOYEE","HOD"]:
+        raise HTTPException(status_code=401, detail="No access")  
     # Use JOIN to fetch employee with department and role names in a single query
     employee_data = db.query(
         Employee,
@@ -82,7 +85,7 @@ def create_employee(
 ):
     # Check if employee already exists
     role =current_user["role"] 
-    if role not in [ "HR"]:
+    if role not in [ "HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     existing_employee = db.query(Employee).filter(
         Employee.employee_number == employee_data.employee_number
@@ -138,7 +141,7 @@ def update_employee(
     current_user: dict = Depends(get_current_user)
 ):  
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     try:
         # Check if employee exists
@@ -206,7 +209,7 @@ def delete_employee(
     current_user: dict = Depends(get_current_user)
 ):  
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     try:
 
@@ -246,7 +249,7 @@ def get_all_employees(
     current_user: dict = Depends(get_current_user)
 ):
     role =current_user["role"] 
-    if role not in ["HOD", "HR"]:
+    if role not in ["HOD", "HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     try:
         if(current_user["role"]=="HR"):

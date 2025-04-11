@@ -15,7 +15,7 @@ def add_competencies_to_employee(
     current_user: dict = Depends(get_current_user)
 ):
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     try:
         # Check if employee exists
@@ -84,7 +84,7 @@ def remove_competencies_from_employee(
     current_user: dict = Depends(get_current_user)
 ):
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     try:
         # Check if employee exists
@@ -134,6 +134,9 @@ def get_employee_competencies(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+    role =current_user["role"] 
+    if role not in ["HR","ADMIN","HOD"]:
+        raise HTTPException(status_code=401, detail="No access")  
     try:
         # Check if employee exists
         employee = db.query(Employee).filter(Employee.employee_number == employee_number).first()
@@ -143,19 +146,16 @@ def get_employee_competencies(
                 detail="Employee not found"
             )
         
-        # Check if current user has permission (HR or same department)
-        if current_user["role"] != "HR" and employee.department_code != current_user["department_code"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to view this employee's competencies"
-            )
+        
         
         # Query employee competencies with competency details
-        employee_competencies = db.query(EmployeeCompetency, Competency)\
-            .join(Competency, EmployeeCompetency.competency_code == Competency.code)\
-            .filter(EmployeeCompetency.employee_number == employee_number)\
-            .all()
-        
+        employee_competencies = db.query(EmployeeCompetency, Competency).join(
+    Competency,
+    EmployeeCompetency.competency_code == Competency.code
+).filter(
+    EmployeeCompetency.employee_number == employee_number
+).all()
+
         # Format the response
         response = []
         for emp_comp, comp in employee_competencies:

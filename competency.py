@@ -20,7 +20,7 @@ def create_competency(
 ):
     # Checking if competency already exists
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     db_competency = db.query(Competency).filter(Competency.code == competency.code).first()
     if db_competency:
@@ -45,7 +45,7 @@ def create_competency(
 def get_all_competencies(db: Session = Depends(get_db),current_user: dict = Depends(get_current_user)):
     
     role =current_user["role"] 
-    if role not in ["HOD", "HR"]:
+    if role not in ["HOD", "HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     return db.query(Competency).all()
 
@@ -60,7 +60,7 @@ def update_competency(
     current_user: dict = Depends(get_current_user)
 ):
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     db_competency = db.query(Competency).filter(Competency.id == competency_id).first()
     if not db_competency:
@@ -90,7 +90,7 @@ def delete_competency(
     current_user: dict = Depends(get_current_user)):
     
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     competency = db.query(Competency).filter(Competency.id == competency_id).first()
     if not competency:

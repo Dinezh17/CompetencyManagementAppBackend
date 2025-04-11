@@ -20,7 +20,7 @@ async def bulk_update_evaluation_status(
     current_user: dict = Depends(get_current_user)
 ):  
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     employees = db.query(Employee).filter(
         Employee.employee_number.in_(update_data.employee_numbers)

@@ -40,7 +40,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     elif ("hod"==emp.role_code.lower()):
         role ="HOD"
     else:
-        role ="Employee" 
+        role ="EMPLOYEE" 
 
 
     new_user = User(

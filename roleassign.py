@@ -20,7 +20,7 @@ def get_role_competencies(
 ):
     
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access") 
     role = db.query(Role).filter(Role.role_code == role_code).first()
     if not role:
@@ -43,7 +43,7 @@ def assign_competencies_to_role(
     current_user: dict = Depends(get_current_user)
 ):
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access") 
     # 1. Verify role exists
 
@@ -103,7 +103,7 @@ def remove_competencies_from_role(
     current_user: dict = Depends(get_current_user)
 ):
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access") 
     # Verify role exists
     role = db.query(Role).filter(Role.role_code == role_code).first()

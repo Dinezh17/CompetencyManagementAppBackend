@@ -9,7 +9,12 @@ router = APIRouter()
 
 
 @router.post("/departments/", response_model=DepartmentResponse)
-def create_department(department: DepartmentCreate, db: Session = Depends(get_db)):
+def create_department(department: DepartmentCreate, db: Session = Depends(get_db),
+    current_user : dict = Depends(get_current_user)):
+    role =current_user["role"] 
+    if role not in ["HR","ADMIN"]:
+        raise HTTPException(status_code=401, detail="No access")  
+    
     existing_department = db.query(Department).filter(Department.name == department.name).first()
     if existing_department:
         raise HTTPException(status_code=400, detail="Department already exists")
@@ -23,11 +28,20 @@ def create_department(department: DepartmentCreate, db: Session = Depends(get_db
 
 
 @router.get("/departments/", response_model=list[DepartmentResponse])
-def get_departments(db: Session = Depends(get_db)):
+def get_departments(db: Session = Depends(get_db),
+    current_user : dict = Depends(get_current_user)):
+
+    role =current_user["role"] 
+    if role not in ["HR","ADMIN","HOD"]:
+        raise HTTPException(status_code=401, detail="No access")  
     return db.query(Department).all()
 
 @router.get("/department/{department_code}", response_model=DepartmentResponse)
-def get_departments(department_code: str,db: Session = Depends(get_db)):
+def get_departments(department_code: str,db: Session = Depends(get_db)
+                    ,current_user : dict = Depends(get_current_user)):
+    role =current_user["role"] 
+    if role not in ["HR","ADMIN","HOD","EMPLOYEE"]:
+        raise HTTPException(status_code=401, detail="No access")  
     return db.query(Department).filter(Department.department_code==department_code).first()
 
 
@@ -37,7 +51,7 @@ def update_department(department_code: str, department_data: DepartmentCreate, d
     current_user: dict = Depends(get_current_user)):
     
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     department = db.query(Department).filter(Department.department_code== department_code).first()
     if not department:
@@ -54,7 +68,7 @@ def delete_department(department_code: str, db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)):
     
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     
     department = db.query(Department).filter(Department.department_code== department_code).first()

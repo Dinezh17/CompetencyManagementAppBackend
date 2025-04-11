@@ -15,7 +15,7 @@ router = APIRouter()
 @router.post("/roles", response_model=RoleResponse)
 def create_role(role_data: RoleCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access")  
     # Check if role already exists
     existing_role = db.query(Role).filter(Role.name == role_data.name).first()
@@ -41,7 +41,7 @@ def get_all_roles(db: Session = Depends(get_db), current_user: dict = Depends(ge
 @router.get("/getrole/{role_code}", response_model=RoleResponse)
 def get_role_by_id(role_code: str, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     role =current_user["role"] 
-    if role not in ["Hod","HR"]:
+    if role not in ["Hod","HR","ADMIN","EMPLOYEE"]:
         raise HTTPException(status_code=401, detail="No access") 
     role = db.query(Role).filter(Role.role_code == role_code).first()
     if not role:
@@ -52,7 +52,7 @@ def get_role_by_id(role_code: str, db: Session = Depends(get_db), current_user: 
 @router.put("/roles/{role_id}", response_model=RoleResponse)
 def update_role(role_id: int, role_data: RoleCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access") 
     role = db.query(Role).filter(Role.id == role_id).first()
     if not role:
@@ -71,7 +71,7 @@ def update_role(role_id: int, role_data: RoleCreate, db: Session = Depends(get_d
 def delete_role(role_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
 
     role =current_user["role"] 
-    if role not in ["HR"]:
+    if role not in ["HR","ADMIN"]:
         raise HTTPException(status_code=401, detail="No access") 
     role = db.query(Role).filter(Role.id == role_id).first()
     if not role:
